@@ -1,144 +1,73 @@
 # Budget Justification Generator
 
-Automatically generates budget justification documents from NAU Excel templates in both LaTeX/PDF and Microsoft Word (.docx) formats.
+Automatically generates budget justification documents from NAU Excel budget templates in both LaTeX and Microsoft Word (.docx) formats.
 
-## 🎯 Quick Start for Non-Technical Users
+## Download
 
-**Looking for a simple, user-friendly application?** Use the **GUI version**:
+**[Download the latest release](https://github.com/NAU-CS/BudgetJustificationGenerator/releases/latest)**
 
-1. **Download**: Get `BudgetJustificationGenerator-macOS-v1.0.dmg`
-2. **Install**: Double-click the DMG and drag the app to Applications
-3. **Run**: Double-click "Budget Justification Generator" like any other Mac app
-4. **Use**: Click buttons to select your Excel file and generate documents
+| Platform | Download | Notes |
+|----------|----------|-------|
+| **macOS** | `BudgetJustificationGenerator-macOS.zip` | Signed and notarized, runs immediately |
+| **Windows** | `BudgetJustificationGenerator-Windows.zip` | Click "More info" → "Run anyway" on first launch |
 
-**No command line or coding required!** The GUI provides:
-- 📁 Visual file picker for selecting Excel files
-- 📊 Real-time system requirements check
-- ✨ Progress indicators
-- ✅ Clear success/error messages
-- 🚀 One-click generation
+## Installation
 
-**For Technical Users**: Continue reading for command-line usage and advanced options.
+### macOS
 
----
+1. Download `BudgetJustificationGenerator-macOS.zip` from the [latest release](https://github.com/NAU-CS/BudgetJustificationGenerator/releases/latest)
+2. Unzip the file
+3. Drag **Budget Justification Generator.app** to your Applications folder
+4. Double-click to run
 
-## Features
+The app is signed and notarized by Apple, so it will open without any security warnings.
 
-- ✅ Generates professional budget justifications from NAU Excel templates
-- ✅ Supports 3, 5, and 10-year project budgets
-- ✅ Outputs both LaTeX (.tex) and Word (.docx) formats
-- ✅ Automatic fringe benefit calculations
-- ✅ Smart formatting with year ranges
-- ✅ Professional tables and structured sections
-- ✅ Includes 3% annual salary escalation text
-- ✅ TODO items highlighted in red (PDF) and yellow/red (DOCX) for easy identification
+### Windows
 
-## Requirements
-
-### Python Dependencies
-- Python 3.6+
-- openpyxl
-- python-docx (for .docx formatting)
-
-Install with:
-```bash
-pip3 install openpyxl python-docx
-```
-
-### LaTeX (for PDF generation)
-- XeLaTeX (part of TeX Live, MacTeX, or MiKTeX)
-
-**macOS:**
-```bash
-brew install --cask mactex
-```
-
-**Ubuntu/Debian:**
-```bash
-sudo apt-get install texlive-xetex texlive-latex-extra
-```
-
-### Pandoc (for DOCX generation)
-Pandoc is required to generate Microsoft Word (.docx) files.
-
-**IMPORTANT:** Pandoc is NOT a Python package and cannot be installed via `pip`. It's a standalone application that must be installed using system package managers or direct download.
-
-**macOS (with Homebrew):**
-```bash
-brew install pandoc
-```
-
-**macOS (without Homebrew - Direct Download):**
-1. Download the .pkg installer from https://github.com/jgm/pandoc/releases/latest
-2. Look for `pandoc-X.X.X-macOS.pkg` (where X.X.X is the version)
-3. Double-click to install
-
-**Ubuntu/Debian:**
-```bash
-sudo apt-get install pandoc
-```
-
-**Windows:**
-Download installer from https://pandoc.org/installing.html
-
-**Verify installation:**
-```bash
-pandoc --version
-```
-
-**Note:** The script will work without Pandoc, but will only generate LaTeX/PDF files.
+1. Download `BudgetJustificationGenerator-Windows.zip` from the [latest release](https://github.com/NAU-CS/BudgetJustificationGenerator/releases/latest)
+2. Extract the zip file to a folder (e.g., `C:\Program Files\Budget Justification Generator`)
+3. Double-click **Budget Justification Generator.exe** to run
+4. On first launch, Windows SmartScreen may appear:
+   - Click **"More info"**
+   - Click **"Run anyway"**
+   - This only happens once
 
 ## Usage
 
-### Basic Usage
-```bash
-python3 generate_budget_justification.py MyBudget.xlsx
-```
+1. **Select Excel File**: Click "Browse" to select your NAU budget Excel file
+2. **Select Output Location**: Choose where to save the generated files (defaults to Desktop)
+3. **Generate**: Click "Generate Budget Justification"
+4. **Done**: The app creates both `.tex` (LaTeX) and `.docx` (Word) files
 
-This generates:
-- `MyBudget_BudgetJustification.tex` - LaTeX source file
-- `MyBudget_BudgetJustification.docx` - Word document (if Pandoc is installed)
+### Try It Out
 
-### Compile PDF
-```bash
-xelatex MyBudget_BudgetJustification.tex
-xelatex MyBudget_BudgetJustification.tex
-```
-*(Run twice to resolve cross-references)*
+An example budget file (`ExampleBudget.xlsx`) is included in this repository for you to test the application.
 
-### Advanced Options
-```bash
-# Specify output directory
-python3 generate_budget_justification.py MyBudget.xlsx -o output_folder
+### NAU Budget Templates
 
-# Verbose output with detailed extraction information
-python3 generate_budget_justification.py MyBudget.xlsx -v
-```
+Download official NAU budget templates from the [Office of Sponsored Projects](https://nau.edu/osp/proposal-support/budget-preparation/).
 
-## Output Formats
+## Output Files
 
-### LaTeX/PDF
-- Fully formatted with proper typography
-- Professional tables and section headers
-- Cross-references for travel tables
-- Red TODO highlights for required edits
+The generator creates two files:
 
-### Word (.docx)
-- Automatically generated from LaTeX using Pandoc
-- Preserves structure and formatting
-- Matches PDF formatting: 0.5" margins, Arial 10pt, justified text
-- Yellow-highlighted TODO items with red text for easy identification
-- Editable in Microsoft Word or Google Docs
-- Ideal for collaboration and final editing
+| Format | Use Case |
+|--------|----------|
+| **LaTeX (.tex)** | Upload to [Overleaf](https://www.overleaf.com) for professional PDF output |
+| **Word (.docx)** | Edit directly in Microsoft Word or Google Docs |
 
-## File Structure
+Both files contain the same content with proper formatting, TODO highlights for sections requiring customization, and all standard budget justification sections (A-J).
 
-The script expects NAU budget Excel templates with the following sheets:
-- **Budget Details** - Senior and other personnel, salary data
-- **Summary_of_Personnel Costs** - Fringe calculations
-- **Cumulative** - Year-over-year totals
-- **Travel Calculator** - Domestic and international travel
-- **Rates** - Indirect cost rates
+## Features
+
+- Generates professional budget justifications from NAU Excel templates
+- Supports 3, 5, and 10-year project budgets
+- Outputs both LaTeX (.tex) and Word (.docx) formats
+- Automatic fringe benefit calculations with individual ERE rates
+- Smart formatting with year ranges (e.g., "2.0 in Years 2-5")
+- Professional tables and structured sections
+- TODO items highlighted in red (PDF) and yellow (Word) for easy identification
+- Bundled Pandoc - no additional software installation required
 
 ## Generated Sections
 
@@ -155,181 +84,83 @@ The output includes all standard NIH budget justification sections:
 - **I. Indirect Costs** - F&A costs with MTDC calculation
 - **J. Total Project Costs** - Overall budget total
 
-## Features
+## Command Line Usage (Advanced)
 
-### Smart Formatting
-- **Year Ranges**: "2.0 in Years 2-5" instead of "Y2: 2.0, Y3: 2.0, Y4: 2.0, Y5: 2.0"
-- **Salary Escalation**: Automatically includes "A 3% annual salary increase is included"
-- **Person Months**: Simplified headers when all years are identical
+For automation or scripting, you can use the Python script directly:
 
-### Accurate Calculations
-- **Fringe rates** extracted from Summary sheet for each person
-- **Senior Personnel**: Individual ERE rates (35.3%, 15.3%, etc.)
-- **Other Personnel**: Position-specific rates (15.1%, 8.1%, etc.)
+```bash
+# Install dependencies
+pip3 install openpyxl python-docx
 
-### Professional Output
-- University-mandated verbiage for fringe benefits and indirect costs
-- Proper LaTeX formatting with escaped special characters
-- TODO highlights for sections requiring customization
-- Structured subsections for Other Direct Costs
+# Generate budget justification
+python3 generate_budget_justification.py MyBudget.xlsx
+
+# With options
+python3 generate_budget_justification.py MyBudget.xlsx -o output_folder -v
+```
+
+**Note:** Command line usage requires Python 3.6+ and Pandoc for DOCX generation.
+
+## Compiling LaTeX to PDF
+
+### Option 1: Overleaf (Recommended)
+
+1. Go to [Overleaf](https://www.overleaf.com) and create an account
+2. Create a new project → Upload Project
+3. Upload the generated `.tex` file
+4. Click "Recompile" to generate PDF
+
+### Option 2: Local Compilation
+
+If you have LaTeX installed locally:
+
+```bash
+xelatex MyBudget_BudgetJustification.tex
+xelatex MyBudget_BudgetJustification.tex
+```
+*(Run twice to resolve cross-references)*
 
 ## Troubleshooting
 
-### Pandoc Not Found
-If you see: `⚠ Warning: Could not generate DOCX file. Pandoc may not be installed.`
-
-Install Pandoc using the instructions above. The LaTeX/PDF generation will still work.
-
-### LaTeX Compilation Errors
-- Make sure XeLaTeX is installed
-- Run compilation **twice** to resolve cross-references
-- Check that all special characters are properly escaped
-
-### Excel Template Issues
-- Ensure the Excel file uses the standard NAU template structure
-- Check that sheet names match exactly (including spaces)
-- Verify person months and salary data are in expected columns
-
-## Examples
-
+### macOS: "App is damaged" or won't open
+This shouldn't happen with the signed release. If it does:
 ```bash
-# Generate from EdgeCase budget
-python3 generate_budget_justification.py EdgeCase.xlsx
-
-# Output to specific folder with verbose logging
-python3 generate_budget_justification.py NetGauge.xlsx -o output/ -v
-
-# Compile the resulting PDF
-cd output/
-xelatex NetGauge_BudgetJustification.tex
-xelatex NetGauge_BudgetJustification.tex
+xattr -cr "/Applications/Budget Justification Generator.app"
 ```
 
-## Building Standalone Executable
+### Windows: SmartScreen blocks the app
+Click "More info" → "Run anyway". This is normal for new applications without an expensive code signing certificate.
 
-You can package the script as a standalone executable that doesn't require Python to be installed.
+### Excel file not recognized
+Ensure your Excel file uses the standard NAU budget template structure with these sheets:
+- Budget Details
+- Summary_of_Personnel Costs
+- Cumulative
+- Travel Calculator
+- Rates
 
-### Requirements for Building
-- PyInstaller: `pip3 install pyinstaller`
+## Building from Source
 
-### Quick Build
-
-```bash
-./build_executable.sh
-```
-
-This creates a single executable file: `dist/budget-justification` (~14MB)
-
-### Manual Build
+For developers who want to build the application themselves:
 
 ```bash
-# Install PyInstaller
-pip3 install pyinstaller
+# Clone the repository
+git clone https://github.com/NAU-CS/BudgetJustificationGenerator.git
+cd BudgetJustificationGenerator
 
-# Build the executable
-python3 -m PyInstaller budget_justification.spec --clean
+# Install dependencies
+pip install -r requirements.txt
+
+# Build with PyInstaller
+python -m PyInstaller budget_justification_gui.spec
 ```
-
-### Using the Executable
-
-```bash
-# Basic usage
-./dist/budget-justification MyBudget.xlsx
-
-# With output directory
-./dist/budget-justification MyBudget.xlsx -o output_folder
-
-# Verbose mode
-./dist/budget-justification MyBudget.xlsx -v
-```
-
-### Distribution
-
-The executable can be distributed to other users **on the same OS** without requiring:
-- ✅ Python installation
-- ✅ Python packages (openpyxl, python-docx)
-
-**Still Required** on the target system:
-- ⚠️ Pandoc (for .docx generation) - [Installation instructions](#pandoc-for-docx-generation)
-- ⚠️ XeLaTeX (for PDF compilation) - [Installation instructions](#latex-for-pdf-generation)
-
-**Platform Notes:**
-- macOS executable works on macOS only (Intel or Apple Silicon)
-- Build separately for Windows/Linux if distribution to those platforms is needed
-- Cross-platform: Consider distributing the Python script instead
-
-### What Gets Packaged
-
-The executable includes:
-- Complete Python interpreter
-- All Python dependencies (openpyxl, python-docx, lxml, etc.)
-- The budget justification script
-
-The executable does NOT include:
-- Pandoc (system tool, must be installed separately)
-- XeLaTeX (system tool, must be installed separately)
-- Input Excel files (provided by user)
-
-## Building GUI Application (Recommended for Non-Technical Users)
-
-The GUI application provides a much better experience for non-technical users.
-
-### Quick Build
-
-```bash
-./build_gui_app.sh
-```
-
-This creates: `dist/Budget Justification Generator.app` (~16MB)
-
-### Create Distributable DMG
-
-```bash
-./create_dmg.sh
-```
-
-This creates: `BudgetJustificationGenerator-macOS-v1.0.dmg`
-
-**The DMG file is perfect for distribution because:**
-- ✅ Users just double-click to open
-- ✅ Familiar "drag to Applications" installation
-- ✅ Includes a README with instructions
-- ✅ Works like any other Mac application
-- ✅ No terminal or coding knowledge required
-
-### What Users Get
-
-**Visual Interface:**
-- Browse button to select Excel file
-- System requirements status (shows if Pandoc/XeLaTeX are installed)
-- Progress bar during generation
-- Clear error messages
-- Success notification with option to open output folder
-
-**Better User Experience:**
-- No command line needed
-- Visual feedback at every step
-- Automatic detection of missing dependencies
-- One-click file generation
-
-### GUI vs. Command Line
-
-| Feature | GUI App | Command Line |
-|---------|---------|--------------|
-| User-friendly | ✅ Very easy | ❌ Technical |
-| Installation | Drag & drop | None needed |
-| File selection | Click to browse | Type path |
-| Error messages | Clear dialogs | Terminal text |
-| Best for | Non-technical users | Automation, scripts |
-
-## Notes
-
-- The script automatically detects 3, 5, or 10-year project templates
-- All monetary values are formatted with proper currency symbols
-- Travel tables include detailed breakdowns by trip
-- Section numbering follows NIH standards (A-J)
-- Both .tex and .docx files are standalone and self-contained
 
 ## Support
 
-For issues or questions, consult the NAU Office of Sponsored Projects or Research Development.
+For questions about budget preparation, contact the [NAU Office of Sponsored Projects](https://nau.edu/osp/).
+
+For issues with this application, [open an issue](https://github.com/NAU-CS/BudgetJustificationGenerator/issues) on GitHub.
+
+## License
+
+MIT License - Created by Jared Duval
