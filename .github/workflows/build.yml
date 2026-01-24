@@ -1,0 +1,215 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build-macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+
+      - name: Download Pandoc for macOS
+        run: |
+          mkdir -p bundled_bin
+          # Download arm64
+          curl -L -o pandoc-arm64.zip "https://github.com/jgm/pandoc/releases/download/3.6.2/pandoc-3.6.2-arm64-macOS.zip"
+          unzip pandoc-arm64.zip
+          cp pandoc-3.6.2-arm64/bin/pandoc bundled_bin/pandoc-arm64
+          chmod +x bundled_bin/pandoc-arm64
+          # Download x86_64
+          curl -L -o pandoc-x86.zip "https://github.com/jgm/pandoc/releases/download/3.6.2/pandoc-3.6.2-x86_64-macOS.zip"
+          unzip pandoc-x86.zip
+          cp pandoc-3.6.2-x86_64/bin/pandoc bundled_bin/pandoc-x86_64
+          chmod +x bundled_bin/pandoc-x86_64
+
+      - name: Build with PyInstaller
+        run: |
+          python -m PyInstaller budget_justification_gui.spec
+
+      - name: Import signing certificate
+        env:
+          MACOS_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE }}
+          MACOS_CERTIFICATE_PWD: ${{ secrets.MACOS_CERTIFICATE_PWD }}
+          KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
+        run: |
+          echo $MACOS_CERTIFICATE | base64 --decode > certificate.p12
+          security create-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
+          security default-keychain -s build.keychain
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
+          security import certificate.p12 -k build.keychain -P "$MACOS_CERTIFICATE_PWD" -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASSWORD" build.keychain
+
+      - name: Sign app
+        run: |
+          cd dist
+          xattr -cr "Budget Justification Generator.app"
+          # Sign all .so and .dylib files
+          find "Budget Justification Generator.app" -type f \( -name "*.so" -o -name "*.dylib" \) -exec codesign --force --options runtime --sign "Developer ID Application: Jared Scott Duval (FH7G4JHQUE)" {} \;
+          # Sign bundled Pandoc executables
+          codesign --force --options runtime --sign "Developer ID Application: Jared Scott Duval (FH7G4JHQUE)" "Budget Justification Generator.app/Contents/MacOS/pandoc-arm64"
+          codesign --force --options runtime --sign "Developer ID Application: Jared Scott Duval (FH7G4JHQUE)" "Budget Justification Generator.app/Contents/MacOS/pandoc-x86_64"
+          # Sign main executable
+          codesign --force --options runtime --sign "Developer ID Application: Jared Scott Duval (FH7G4JHQUE)" "Budget Justification Generator.app/Contents/MacOS/Budget Justification Generator"
+          # Sign app bundle
+          codesign --force --options runtime --sign "Developer ID Application: Jared Scott Duval (FH7G4JHQUE)" "Budget Justification Generator.app"
+
+      - name: Notarize app
+        env:
+          APPLE_API_KEY: ${{ secrets.APPLE_API_KEY }}
+          APPLE_API_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
+          APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
+        run: |
+          cd dist
+          # Create zip for notarization
+          ditto -c -k --sequesterRsrc --keepParent "Budget Justification Generator.app" "BudgetJustificationGenerator-macOS.zip"
+          # Store API key
+          mkdir -p ~/.private_keys
+          echo "$APPLE_API_KEY" > ~/.private_keys/AuthKey_${APPLE_API_KEY_ID}.p8
+          # Submit for notarization
+          xcrun notarytool submit "BudgetJustificationGenerator-macOS.zip" \
+            --key ~/.private_keys/AuthKey_${APPLE_API_KEY_ID}.p8 \
+            --key-id "$APPLE_API_KEY_ID" \
+            --issuer "$APPLE_API_ISSUER" \
+            --wait
+          # Staple
+          xcrun stapler staple "Budget Justification Generator.app"
+          # Recreate zip with stapled app
+          rm "BudgetJustificationGenerator-macOS.zip"
+          ditto -c -k --sequesterRsrc --keepParent "Budget Justification Generator.app" "BudgetJustificationGenerator-macOS.zip"
+
+      - name: Upload macOS artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: BudgetJustificationGenerator-macOS
+          path: dist/BudgetJustificationGenerator-macOS.zip
+
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+
+      - name: Download Pandoc for Windows
+        run: |
+          mkdir bundled_bin
+          Invoke-WebRequest -Uri "https://github.com/jgm/pandoc/releases/download/3.6.2/pandoc-3.6.2-windows-x86_64.zip" -OutFile pandoc-windows.zip
+          Expand-Archive pandoc-windows.zip -DestinationPath pandoc_temp
+          Copy-Item "pandoc_temp/pandoc-3.6.2-windows-x86_64/pandoc.exe" "bundled_bin/pandoc.exe"
+
+      - name: Create Windows spec file
+        run: |
+          @"
+          # -*- mode: python ; coding: utf-8 -*-
+          block_cipher = None
+          a = Analysis(
+              ['budget_justification_gui.py'],
+              pathex=[],
+              binaries=[('bundled_bin/pandoc.exe', '.')],
+              datas=[],
+              hiddenimports=['openpyxl', 'openpyxl.cell', 'openpyxl.cell._writer', 'openpyxl.styles', 'docx', 'docx.shared', 'docx.enum.text', 'tkinter', 'tkinter.filedialog', 'tkinter.messagebox', 'tkinter.ttk'],
+              hookspath=[],
+              hooksconfig={},
+              runtime_hooks=[],
+              excludes=[],
+              win_no_prefer_redirects=False,
+              win_private_assemblies=False,
+              cipher=block_cipher,
+              noarchive=False,
+          )
+          pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
+          exe = EXE(
+              pyz,
+              a.scripts,
+              [],
+              exclude_binaries=True,
+              name='Budget Justification Generator',
+              debug=False,
+              bootloader_ignore_signals=False,
+              strip=False,
+              upx=True,
+              console=False,
+              disable_windowed_traceback=False,
+              argv_emulation=False,
+              target_arch=None,
+              codesign_identity=None,
+              entitlements_file=None,
+              icon=None,
+          )
+          coll = COLLECT(
+              exe,
+              a.binaries,
+              a.zipfiles,
+              a.datas,
+              strip=False,
+              upx=True,
+              upx_exclude=[],
+              name='Budget Justification Generator',
+          )
+          "@ | Out-File -FilePath budget_justification_gui_windows.spec -Encoding UTF8
+
+      - name: Build with PyInstaller
+        run: |
+          python -m PyInstaller budget_justification_gui_windows.spec
+
+      - name: Create ZIP
+        run: |
+          Compress-Archive -Path "dist/Budget Justification Generator" -DestinationPath "BudgetJustificationGenerator-Windows.zip"
+
+      # TODO: Add Windows code signing when Azure Trusted Signing is available
+      # - name: Sign Windows executable
+      #   uses: azure/trusted-signing-action@v0
+      #   with:
+      #     azure-tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+      #     azure-client-id: ${{ secrets.AZURE_CLIENT_ID }}
+      #     azure-client-secret: ${{ secrets.AZURE_CLIENT_SECRET }}
+      #     endpoint: https://eus.codesigning.azure.net/
+      #     code-signing-account-name: ${{ secrets.AZURE_CODE_SIGNING_ACCOUNT }}
+      #     certificate-profile-name: ${{ secrets.AZURE_CERTIFICATE_PROFILE }}
+      #     files-folder: dist/Budget Justification Generator
+      #     files-folder-filter: exe
+
+      - name: Upload Windows artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: BudgetJustificationGenerator-Windows
+          path: BudgetJustificationGenerator-Windows.zip
+
+  release:
+    needs: [build-macos, build-windows]
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            BudgetJustificationGenerator-macOS/BudgetJustificationGenerator-macOS.zip
+            BudgetJustificationGenerator-Windows/BudgetJustificationGenerator-Windows.zip
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

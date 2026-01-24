@@ -1,0 +1,33 @@
+# Build artifacts
+build/
+dist/
+__pycache__/
+*.pyc
+*.pyo
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# PyInstaller
+*.spec.bak
+
+# Temp files
+pandoc_temp/
+*.zip
+*.dmg
+
+# Sensitive
+AuthKey*.p8*
+
+# Claude
+.claude/
+
+# Pandoc binaries (downloaded during build)
+bundled_bin/
