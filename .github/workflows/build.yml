@@ -160,7 +160,7 @@ jobs:
               ['budget_justification_gui.py'],
               pathex=[],
               binaries=[('bundled_bin/pandoc.exe', '.')],
-              datas=[],
+              datas=[('OSP-3-Year-Budget-Template-August-2025.xlsx', '.'), ('OSP-5-Year-Budget-Template-August-2025.xlsx', '.'), ('OSP-10-Year-Budget-Template-August-2025.xlsx', '.')],
               hiddenimports=['openpyxl', 'openpyxl.cell', 'openpyxl.cell._writer', 'openpyxl.styles', 'docx', 'docx.shared', 'docx.enum.text', 'tkinter', 'tkinter.filedialog', 'tkinter.messagebox', 'tkinter.ttk'],
               hookspath=[],
               hooksconfig={},

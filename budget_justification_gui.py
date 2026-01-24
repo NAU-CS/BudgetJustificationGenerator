@@ -9,6 +9,7 @@ from tkinter import filedialog, messagebox, ttk
 import threading
 import os
 import sys
+import shutil
 from pathlib import Path
 
 # Import the main script functionality
@@ -62,15 +63,15 @@ def get_pandoc_path():
             return bundled_generic
 
     # Fall back to system Pandoc
-    import shutil
     system_pandoc = shutil.which('pandoc')
     return system_pandoc
+
 
 class BudgetJustificationGUI:
     def __init__(self, root):
         self.root = root
         self.root.title("Budget Justification Generator")
-        self.root.geometry("700x450")
+        self.root.geometry("750x580")
         self.root.resizable(False, False)
 
         # Variables
@@ -78,6 +79,13 @@ class BudgetJustificationGUI:
         self.output_dir = tk.StringVar(value=str(Path.home() / "Desktop"))
         self.status_text = tk.StringVar(value="Ready to generate budget justification")
         self.processing = False
+
+        # Template filenames
+        self.templates = {
+            3: "OSP-3-Year-Budget-Template-August-2025.xlsx",
+            5: "OSP-5-Year-Budget-Template-August-2025.xlsx",
+            10: "OSP-10-Year-Budget-Template-August-2025.xlsx"
+        }
 
         self.create_widgets()
 
@@ -92,13 +100,50 @@ class BudgetJustificationGUI:
         title.pack(pady=20)
 
         # Main content
-        content = tk.Frame(self.root, padx=30, pady=20)
+        content = tk.Frame(self.root, padx=30, pady=15)
         content.pack(fill=tk.BOTH, expand=True)
+
+        # New Budget section
+        new_budget_frame = tk.LabelFrame(content, text="Start a New Budget",
+                                         font=("Arial", 12, "bold"), padx=15, pady=10)
+        new_budget_frame.pack(fill=tk.X, pady=(0, 12))
+
+        # Container for buttons to center them
+        btn_container = tk.Frame(new_budget_frame)
+        btn_container.pack()
+
+        btn_3yr = tk.Button(btn_container, text="New 3-Year Budget",
+                           command=lambda: self.create_new_budget(3),
+                           font=("Arial", 10), bg="#5C8A4D", fg="white",
+                           activebackground="#4A7340", activeforeground="white",
+                           highlightbackground="#5C8A4D",
+                           padx=12, pady=5, cursor="hand2")
+        btn_3yr.pack(side=tk.LEFT, padx=5)
+
+        btn_5yr = tk.Button(btn_container, text="New 5-Year Budget",
+                           command=lambda: self.create_new_budget(5),
+                           font=("Arial", 10), bg="#5C8A4D", fg="white",
+                           activebackground="#4A7340", activeforeground="white",
+                           highlightbackground="#5C8A4D",
+                           padx=12, pady=5, cursor="hand2")
+        btn_5yr.pack(side=tk.LEFT, padx=5)
+
+        btn_10yr = tk.Button(btn_container, text="New 10-Year Budget",
+                            command=lambda: self.create_new_budget(10),
+                            font=("Arial", 10), bg="#5C8A4D", fg="white",
+                            activebackground="#4A7340", activeforeground="white",
+                            highlightbackground="#5C8A4D",
+                            padx=12, pady=5, cursor="hand2")
+        btn_10yr.pack(side=tk.LEFT, padx=5)
+
+        # Separator
+        separator = ttk.Separator(content, orient='horizontal')
+        separator.pack(fill=tk.X, pady=10)
 
         # Excel file selection
         file_frame = tk.LabelFrame(content, text="1. Select Excel Budget File",
-                                   font=("Arial", 12, "bold"), padx=15, pady=15)
-        file_frame.pack(fill=tk.X, pady=(0, 15))
+                                   font=("Arial", 12, "bold"), padx=15, pady=12)
+        file_frame.pack(fill=tk.X, pady=(0, 12))
 
         excel_entry = tk.Entry(file_frame, textvariable=self.excel_file,
                               font=("Arial", 11), state='readonly', width=50)
@@ -114,8 +159,8 @@ class BudgetJustificationGUI:
 
         # Output directory selection
         output_frame = tk.LabelFrame(content, text="2. Select Output Location",
-                                     font=("Arial", 12, "bold"), padx=15, pady=15)
-        output_frame.pack(fill=tk.X, pady=(0, 15))
+                                     font=("Arial", 12, "bold"), padx=15, pady=12)
+        output_frame.pack(fill=tk.X, pady=(0, 12))
 
         output_entry = tk.Entry(output_frame, textvariable=self.output_dir,
                                font=("Arial", 11), state='readonly', width=50)
@@ -135,21 +180,52 @@ class BudgetJustificationGUI:
                                       font=("Arial", 14, "bold"), bg="#1E7A46", fg="white",
                                       activebackground="#165C35", activeforeground="white",
                                       highlightbackground="#1E7A46",
-                                      padx=30, pady=15, cursor="hand2")
-        self.generate_btn.pack(pady=30)
+                                      padx=30, pady=12, cursor="hand2")
+        self.generate_btn.pack(pady=20)
 
         # Progress bar
-        self.progress = ttk.Progressbar(content, mode='indeterminate', length=600)
+        self.progress = ttk.Progressbar(content, mode='indeterminate', length=650)
 
         # Status message
         status_label = tk.Label(content, textvariable=self.status_text,
-                               font=("Arial", 10), fg="#555", wraplength=600)
+                               font=("Arial", 10), fg="#555", wraplength=650)
         status_label.pack()
 
         # Footer
         footer = tk.Label(self.root, text="Created By Jared Duval",
                          font=("Arial", 9), fg="#666", bg="#f0f0f0", pady=10)
         footer.pack(side=tk.BOTTOM, fill=tk.X)
+
+    def create_new_budget(self, years):
+        """Create a new budget file from template"""
+        template_name = self.templates.get(years)
+        if not template_name:
+            messagebox.showerror("Error", f"No template available for {years}-year budget")
+            return
+
+        template_path = get_bundled_path(template_name)
+
+        if not os.path.exists(template_path):
+            messagebox.showerror("Error", f"Template file not found: {template_name}\n\nPlease ensure the template is bundled with the application.")
+            return
+
+        # Ask user where to save the new budget
+        save_path = filedialog.asksaveasfilename(
+            title=f"Save New {years}-Year Budget As",
+            defaultextension=".xlsx",
+            filetypes=[("Excel files", "*.xlsx")],
+            initialfile=f"My_{years}_Year_Budget.xlsx",
+            initialdir=str(Path.home() / "Desktop")
+        )
+
+        if save_path:
+            try:
+                shutil.copy2(template_path, save_path)
+                self.excel_file.set(save_path)
+                self.status_text.set(f"Created new {years}-year budget: {os.path.basename(save_path)}")
+                messagebox.showinfo("Success", f"New {years}-year budget created!\n\nFile: {os.path.basename(save_path)}\n\nOpen this file in Excel to fill in your budget details, then return here to generate the justification.")
+            except Exception as e:
+                messagebox.showerror("Error", f"Failed to create budget file:\n\n{e}")
 
     def browse_excel(self):
         """Open file dialog to select Excel file"""
@@ -275,7 +351,11 @@ class BudgetJustificationGUI:
         # Ask if user wants to open the output folder
         if messagebox.askyesno("Open Folder", "Would you like to open the output folder?"):
             import subprocess
-            subprocess.run(['open', self.output_dir.get()])
+            import platform
+            if platform.system() == 'Windows':
+                os.startfile(self.output_dir.get())
+            else:
+                subprocess.run(['open', self.output_dir.get()])
 
     def show_error(self, error_msg):
         """Show error message"""
@@ -286,6 +366,7 @@ class BudgetJustificationGUI:
 
         messagebox.showerror("Error", f"Failed to generate budget justification:\n\n{error_msg}")
         self.status_text.set("Error occurred. Please try again.")
+
 
 def main():
     root = tk.Tk()

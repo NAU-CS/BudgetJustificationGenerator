@@ -9,7 +9,11 @@ a = Analysis(
         ('bundled_bin/pandoc-arm64', '.'),
         ('bundled_bin/pandoc-x86_64', '.'),
     ],
-    datas=[],
+    datas=[
+        ('OSP-3-Year-Budget-Template-August-2025.xlsx', '.'),
+        ('OSP-5-Year-Budget-Template-August-2025.xlsx', '.'),
+        ('OSP-10-Year-Budget-Template-August-2025.xlsx', '.'),
+    ],
     hiddenimports=[
         'openpyxl',
         'openpyxl.cell',
