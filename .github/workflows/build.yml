@@ -74,9 +74,10 @@ jobs:
           cd dist
           # Create zip for notarization
           ditto -c -k --sequesterRsrc --keepParent "Budget Justification Generator.app" "BudgetJustificationGenerator-macOS.zip"
-          # Store API key
+          # Store API key (use printf to preserve newlines)
           mkdir -p ~/.private_keys
-          echo "$APPLE_API_KEY" > ~/.private_keys/AuthKey_${APPLE_API_KEY_ID}.p8
+          printf '%s\n' "$APPLE_API_KEY" > ~/.private_keys/AuthKey_${APPLE_API_KEY_ID}.p8
+          chmod 600 ~/.private_keys/AuthKey_${APPLE_API_KEY_ID}.p8
           # Submit for notarization
           xcrun notarytool submit "BudgetJustificationGenerator-macOS.zip" \
             --key ~/.private_keys/AuthKey_${APPLE_API_KEY_ID}.p8 \
@@ -110,11 +111,15 @@ jobs:
           pip install -r requirements.txt
 
       - name: Download Pandoc for Windows
+        shell: pwsh
         run: |
-          mkdir bundled_bin
+          New-Item -ItemType Directory -Force -Path bundled_bin
+          $ProgressPreference = 'SilentlyContinue'
           Invoke-WebRequest -Uri "https://github.com/jgm/pandoc/releases/download/3.6.1/pandoc-3.6.1-windows-x86_64.zip" -OutFile pandoc-windows.zip
-          Expand-Archive pandoc-windows.zip -DestinationPath pandoc_temp
-          Copy-Item "pandoc_temp/pandoc-3.6.1-windows-x86_64/pandoc.exe" "bundled_bin/pandoc.exe"
+          Expand-Archive -Path pandoc-windows.zip -DestinationPath pandoc_temp -Force
+          Get-ChildItem -Path pandoc_temp -Recurse
+          $pandocExe = Get-ChildItem -Path pandoc_temp -Recurse -Filter "pandoc.exe" | Select-Object -First 1
+          Copy-Item $pandocExe.FullName -Destination "bundled_bin/pandoc.exe"
 
       - name: Create Windows spec file
         run: |
