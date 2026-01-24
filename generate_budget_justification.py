@@ -627,11 +627,13 @@ class LaTeXGenerator:
         """Section A: Senior/Key Personnel - fully dynamic"""
         total = self.data.cumulative_data.get('sr_personnel_salary', {}).get('total', 0)
 
-        section = f"\\subsection*{{A. Senior Personnel—{format_currency(total)}}}\n"
-
         if not self.data.senior_personnel:
-            section += "No senior personnel budgeted for this project.\n\n"
+            section = "\\subsection*{A. Senior Personnel—N/A}\n"
+            section += "No senior personnel (PI, Co-PI, or Senior Personnel) salary is requested for this project. "
+            section += "Key personnel contributing to this project will do so through cost-sharing or are supported by other funding sources.\n\n"
             return section
+
+        section = f"\\subsection*{{A. Senior Personnel—{format_currency(total)}}}\n"
 
         for i, person in enumerate(self.data.senior_personnel, 1):
             name = escape_latex(person['name'])
@@ -786,14 +788,15 @@ class LaTeXGenerator:
         # Calculate grand total
         grand_total = total_salary + total_benefits + tuition
 
-        section = f"\\subsection*{{B. Other Personnel—{format_currency(grand_total)}}}\n"
-
         # Filter to only include personnel with budget amounts > 0
         budgeted_personnel = [p for p in self.data.other_personnel if p.get('total_salary', 0) > 0]
 
         if not budgeted_personnel:
-            section += "No other personnel budgeted for this project.\n\n"
+            section = "\\subsection*{B. Other Personnel—N/A}\n"
+            section += "No other personnel (graduate students, postdocs, research staff, etc.) are budgeted for this project.\n\n"
             return section
+
+        section = f"\\subsection*{{B. Other Personnel—{format_currency(grand_total)}}}\n"
 
         for i, position in enumerate(budgeted_personnel, 1):
             role = escape_latex(position['role'])
@@ -1068,6 +1071,15 @@ class LaTeXGenerator:
     def generate_fringe_section(self):
         """Section C: Fringe Benefits with exact NAU verbiage - single paragraph format"""
         total = self.data.cumulative_data.get('total_benefits', {}).get('total', 0)
+
+        # Check if there's any personnel with fringe benefits
+        has_personnel = (self.data.senior_personnel or
+                        any(p.get('total_salary', 0) > 0 for p in self.data.other_personnel))
+
+        if not has_personnel or total == 0:
+            section = "\\subsection*{C. Fringe Benefits—N/A}\n"
+            section += "No fringe benefits are requested as no personnel salary is budgeted for this project.\n\n"
+            return section
 
         section = f"\\subsection*{{C. Fringe Benefits—{format_currency(total)}}}\n"
         section += FRINGE_BENEFITS_TEXT + " "
