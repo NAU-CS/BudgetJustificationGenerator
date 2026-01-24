@@ -58,12 +58,14 @@ jobs:
           xattr -cr "Budget Justification Generator.app"
           # Sign all .so and .dylib files
           find "Budget Justification Generator.app" -type f \( -name "*.so" -o -name "*.dylib" \) -exec codesign --force --options runtime --sign "Developer ID Application: Jared Scott Duval (FH7G4JHQUE)" {} \;
-          # Sign bundled Pandoc executables (find them wherever they are)
-          find "Budget Justification Generator.app" -type f -name "pandoc*" ! -name "*.py" -exec codesign --force --options runtime --sign "Developer ID Application: Jared Scott Duval (FH7G4JHQUE)" {} \;
-          # Sign main executable
+          # Sign ALL executable files in MacOS folder (including Pandoc, Python, etc.)
+          find "Budget Justification Generator.app/Contents/MacOS" -type f -perm +111 -exec codesign --force --options runtime --sign "Developer ID Application: Jared Scott Duval (FH7G4JHQUE)" {} \;
+          # Sign main executable explicitly
           codesign --force --options runtime --sign "Developer ID Application: Jared Scott Duval (FH7G4JHQUE)" "Budget Justification Generator.app/Contents/MacOS/Budget Justification Generator"
           # Sign app bundle
           codesign --force --options runtime --sign "Developer ID Application: Jared Scott Duval (FH7G4JHQUE)" "Budget Justification Generator.app"
+          # Verify signing
+          codesign --verify --deep --strict --verbose=2 "Budget Justification Generator.app"
 
       - name: Notarize app
         env:
@@ -79,11 +81,22 @@ jobs:
           printf '%s\n' "$APPLE_API_KEY" > ~/.private_keys/AuthKey_${APPLE_API_KEY_ID}.p8
           chmod 600 ~/.private_keys/AuthKey_${APPLE_API_KEY_ID}.p8
           # Submit for notarization
-          xcrun notarytool submit "BudgetJustificationGenerator-macOS.zip" \
+          SUBMIT_OUTPUT=$(xcrun notarytool submit "BudgetJustificationGenerator-macOS.zip" \
             --key ~/.private_keys/AuthKey_${APPLE_API_KEY_ID}.p8 \
             --key-id "$APPLE_API_KEY_ID" \
             --issuer "$APPLE_API_ISSUER" \
-            --wait
+            --wait 2>&1) || true
+          echo "$SUBMIT_OUTPUT"
+          # Extract submission ID and get log if failed
+          SUBMISSION_ID=$(echo "$SUBMIT_OUTPUT" | grep "id:" | head -1 | awk '{print $2}')
+          if echo "$SUBMIT_OUTPUT" | grep -q "status: Invalid"; then
+            echo "Notarization failed. Fetching log..."
+            xcrun notarytool log "$SUBMISSION_ID" \
+              --key ~/.private_keys/AuthKey_${APPLE_API_KEY_ID}.p8 \
+              --key-id "$APPLE_API_KEY_ID" \
+              --issuer "$APPLE_API_ISSUER"
+            exit 1
+          fi
           # Staple
           xcrun stapler staple "Budget Justification Generator.app"
           # Recreate zip with stapled app
