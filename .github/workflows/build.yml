@@ -25,14 +25,14 @@ jobs:
         run: |
           mkdir -p bundled_bin
           # Download arm64
-          curl -L -o pandoc-arm64.zip "https://github.com/jgm/pandoc/releases/download/3.6.2/pandoc-3.6.2-arm64-macOS.zip"
+          curl -L -o pandoc-arm64.zip "https://github.com/jgm/pandoc/releases/download/3.6.1/pandoc-3.6.1-arm64-macOS.zip"
           unzip pandoc-arm64.zip
-          cp pandoc-3.6.2-arm64/bin/pandoc bundled_bin/pandoc-arm64
+          cp pandoc-3.6.1-arm64/bin/pandoc bundled_bin/pandoc-arm64
           chmod +x bundled_bin/pandoc-arm64
           # Download x86_64
-          curl -L -o pandoc-x86.zip "https://github.com/jgm/pandoc/releases/download/3.6.2/pandoc-3.6.2-x86_64-macOS.zip"
+          curl -L -o pandoc-x86.zip "https://github.com/jgm/pandoc/releases/download/3.6.1/pandoc-3.6.1-x86_64-macOS.zip"
           unzip pandoc-x86.zip
-          cp pandoc-3.6.2-x86_64/bin/pandoc bundled_bin/pandoc-x86_64
+          cp pandoc-3.6.1-x86_64/bin/pandoc bundled_bin/pandoc-x86_64
           chmod +x bundled_bin/pandoc-x86_64
 
       - name: Build with PyInstaller
@@ -58,9 +58,8 @@ jobs:
           xattr -cr "Budget Justification Generator.app"
           # Sign all .so and .dylib files
           find "Budget Justification Generator.app" -type f \( -name "*.so" -o -name "*.dylib" \) -exec codesign --force --options runtime --sign "Developer ID Application: Jared Scott Duval (FH7G4JHQUE)" {} \;
-          # Sign bundled Pandoc executables
-          codesign --force --options runtime --sign "Developer ID Application: Jared Scott Duval (FH7G4JHQUE)" "Budget Justification Generator.app/Contents/MacOS/pandoc-arm64"
-          codesign --force --options runtime --sign "Developer ID Application: Jared Scott Duval (FH7G4JHQUE)" "Budget Justification Generator.app/Contents/MacOS/pandoc-x86_64"
+          # Sign bundled Pandoc executables (find them wherever they are)
+          find "Budget Justification Generator.app" -type f -name "pandoc*" ! -name "*.py" -exec codesign --force --options runtime --sign "Developer ID Application: Jared Scott Duval (FH7G4JHQUE)" {} \;
           # Sign main executable
           codesign --force --options runtime --sign "Developer ID Application: Jared Scott Duval (FH7G4JHQUE)" "Budget Justification Generator.app/Contents/MacOS/Budget Justification Generator"
           # Sign app bundle
@@ -113,9 +112,9 @@ jobs:
       - name: Download Pandoc for Windows
         run: |
           mkdir bundled_bin
-          Invoke-WebRequest -Uri "https://github.com/jgm/pandoc/releases/download/3.6.2/pandoc-3.6.2-windows-x86_64.zip" -OutFile pandoc-windows.zip
+          Invoke-WebRequest -Uri "https://github.com/jgm/pandoc/releases/download/3.6.1/pandoc-3.6.1-windows-x86_64.zip" -OutFile pandoc-windows.zip
           Expand-Archive pandoc-windows.zip -DestinationPath pandoc_temp
-          Copy-Item "pandoc_temp/pandoc-3.6.2-windows-x86_64/pandoc.exe" "bundled_bin/pandoc.exe"
+          Copy-Item "pandoc_temp/pandoc-3.6.1-windows-x86_64/pandoc.exe" "bundled_bin/pandoc.exe"
 
       - name: Create Windows spec file
         run: |
