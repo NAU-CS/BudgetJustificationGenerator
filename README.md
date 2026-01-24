@@ -31,6 +31,12 @@ The app is signed and notarized by Apple, so it will open without any security w
    - Click **"More info"**
    - Click **"Run anyway"**
    - This only happens once
+  
+## Budget Requirements
+
+1. You must not modify the template (e.g., removing rows, renaming sheets)
+2. You must have senior personnel recieving compensation (Future release will relax this requirement)
+3. If you want travel tables to be created, you must use the "Travel Calculator" sheet
 
 ## Usage
 
