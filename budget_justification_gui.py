@@ -145,12 +145,9 @@ class BudgetJustificationGUI:
                               font=("Arial", 11), state='readonly', width=50)
         excel_entry.pack(side=tk.LEFT, padx=(0, 10))
 
-        browse_btn = tk.Button(file_frame, text="Browse...",
-                              command=self.browse_excel,
-                              font=("Arial", 11), bg="#2C5F87", fg="white",
-                              activebackground="#1E4A6E", activeforeground="white",
-                              highlightbackground="#2C5F87",
-                              padx=15, cursor="hand2")
+        browse_btn = ttk.Button(file_frame, text="Browse...",
+                               command=self.browse_excel,
+                               style="Blue.TButton")
         browse_btn.pack(side=tk.LEFT)
 
         # Output directory selection
@@ -162,21 +159,15 @@ class BudgetJustificationGUI:
                                font=("Arial", 11), state='readonly', width=50)
         output_entry.pack(side=tk.LEFT, padx=(0, 10))
 
-        output_btn = tk.Button(output_frame, text="Change...",
-                              command=self.browse_output,
-                              font=("Arial", 11), bg="#2C5F87", fg="white",
-                              activebackground="#1E4A6E", activeforeground="white",
-                              highlightbackground="#2C5F87",
-                              padx=15, cursor="hand2")
+        output_btn = ttk.Button(output_frame, text="Change...",
+                               command=self.browse_output,
+                               style="Blue.TButton")
         output_btn.pack(side=tk.LEFT)
 
         # Generate button
-        self.generate_btn = tk.Button(content, text="Generate Budget Justification",
-                                      command=self.generate,
-                                      font=("Arial", 14, "bold"), bg="#1E7A46", fg="white",
-                                      activebackground="#165C35", activeforeground="white",
-                                      highlightbackground="#1E7A46",
-                                      padx=30, pady=12, cursor="hand2")
+        self.generate_btn = ttk.Button(content, text="Generate Budget Justification",
+                                       command=self.generate,
+                                       style="Green.TButton")
         self.generate_btn.pack(pady=20)
 
         # Progress bar
@@ -262,7 +253,7 @@ class BudgetJustificationGUI:
 
         # Start generation in background thread
         self.processing = True
-        self.generate_btn.config(state=tk.DISABLED, bg="#cccccc", fg="#666666")
+        self.generate_btn.config(state=tk.DISABLED)
         self.progress.pack(pady=(0, 10))
         self.progress.start(10)
         self.status_text.set("Processing budget data...")
@@ -332,7 +323,7 @@ class BudgetJustificationGUI:
         """Show success message"""
         self.progress.stop()
         self.progress.pack_forget()
-        self.generate_btn.config(state=tk.NORMAL, bg="#1E7A46", fg="white")
+        self.generate_btn.config(state=tk.NORMAL)
         self.processing = False
 
         files_list = "\n".join([f"• {os.path.basename(f)}" for f in files])
@@ -357,7 +348,7 @@ class BudgetJustificationGUI:
         """Show error message"""
         self.progress.stop()
         self.progress.pack_forget()
-        self.generate_btn.config(state=tk.NORMAL, bg="#1E7A46", fg="white")
+        self.generate_btn.config(state=tk.NORMAL)
         self.processing = False
 
         messagebox.showerror("Error", f"Failed to generate budget justification:\n\n{error_msg}")
