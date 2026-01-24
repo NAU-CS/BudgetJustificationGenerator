@@ -141,14 +141,24 @@ class BudgetJustificationGUI:
                                    font=("Arial", 12, "bold"), padx=15, pady=12)
         file_frame.pack(fill=tk.X, pady=(0, 12))
 
-        excel_entry = tk.Entry(file_frame, textvariable=self.excel_file,
+        # File selection row
+        file_row = tk.Frame(file_frame)
+        file_row.pack(fill=tk.X)
+
+        excel_entry = tk.Entry(file_row, textvariable=self.excel_file,
                               font=("Arial", 11), state='readonly', width=50)
         excel_entry.pack(side=tk.LEFT, padx=(0, 10))
 
-        browse_btn = ttk.Button(file_frame, text="Browse...",
+        browse_btn = ttk.Button(file_row, text="Browse...",
                                command=self.browse_excel,
                                style="Blue.TButton")
         browse_btn.pack(side=tk.LEFT)
+
+        # Disclaimer
+        disclaimer = tk.Label(file_frame,
+                             text="Note: The Excel template must not be modified beyond adding budget data.",
+                             font=("Arial", 9, "italic"), fg="#666")
+        disclaimer.pack(anchor=tk.W, pady=(8, 0))
 
         # Output directory selection
         output_frame = tk.LabelFrame(content, text="2. Select Output Location",
