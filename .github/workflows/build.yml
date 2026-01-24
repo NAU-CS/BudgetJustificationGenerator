@@ -55,15 +55,32 @@ jobs:
       - name: Sign app
         run: |
           cd dist
+          IDENTITY="Developer ID Application: Jared Scott Duval (FH7G4JHQUE)"
           xattr -cr "Budget Justification Generator.app"
+
           # Sign all .so and .dylib files
-          find "Budget Justification Generator.app" -type f \( -name "*.so" -o -name "*.dylib" \) -exec codesign --force --options runtime --sign "Developer ID Application: Jared Scott Duval (FH7G4JHQUE)" {} \;
-          # Sign ALL executable files in MacOS folder (including Pandoc, Python, etc.)
-          find "Budget Justification Generator.app/Contents/MacOS" -type f -perm +111 -exec codesign --force --options runtime --sign "Developer ID Application: Jared Scott Duval (FH7G4JHQUE)" {} \;
+          find "Budget Justification Generator.app" -type f \( -name "*.so" -o -name "*.dylib" \) -exec codesign --force --timestamp --options runtime --sign "$IDENTITY" {} \;
+
+          # Sign Python framework
+          find "Budget Justification Generator.app/Contents/Frameworks" -type f -perm +111 -exec codesign --force --timestamp --options runtime --sign "$IDENTITY" {} \;
+
+          # Sign Pandoc binaries in Frameworks
+          if [ -f "Budget Justification Generator.app/Contents/Frameworks/pandoc-arm64" ]; then
+            codesign --force --timestamp --options runtime --sign "$IDENTITY" "Budget Justification Generator.app/Contents/Frameworks/pandoc-arm64"
+          fi
+          if [ -f "Budget Justification Generator.app/Contents/Frameworks/pandoc-x86_64" ]; then
+            codesign --force --timestamp --options runtime --sign "$IDENTITY" "Budget Justification Generator.app/Contents/Frameworks/pandoc-x86_64"
+          fi
+
+          # Sign executables in MacOS folder
+          find "Budget Justification Generator.app/Contents/MacOS" -type f -perm +111 -exec codesign --force --timestamp --options runtime --sign "$IDENTITY" {} \;
+
           # Sign main executable explicitly
-          codesign --force --options runtime --sign "Developer ID Application: Jared Scott Duval (FH7G4JHQUE)" "Budget Justification Generator.app/Contents/MacOS/Budget Justification Generator"
+          codesign --force --timestamp --options runtime --sign "$IDENTITY" "Budget Justification Generator.app/Contents/MacOS/Budget Justification Generator"
+
           # Sign app bundle
-          codesign --force --options runtime --sign "Developer ID Application: Jared Scott Duval (FH7G4JHQUE)" "Budget Justification Generator.app"
+          codesign --force --timestamp --options runtime --sign "$IDENTITY" "Budget Justification Generator.app"
+
           # Verify signing
           codesign --verify --deep --strict --verbose=2 "Budget Justification Generator.app"
 
