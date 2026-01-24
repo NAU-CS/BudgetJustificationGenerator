@@ -90,6 +90,11 @@ class BudgetJustificationGUI:
         self.create_widgets()
 
     def create_widgets(self):
+        # Configure ttk styles for cross-platform button appearance
+        style = ttk.Style()
+        style.configure("Blue.TButton", font=("Arial", 10), padding=(12, 5))
+        style.configure("Green.TButton", font=("Arial", 14, "bold"), padding=(30, 12))
+
         # Header
         header = tk.Frame(self.root, bg="#2C5F87", height=80)
         header.pack(fill=tk.X)
@@ -112,28 +117,19 @@ class BudgetJustificationGUI:
         btn_container = tk.Frame(new_budget_frame)
         btn_container.pack()
 
-        btn_3yr = tk.Button(btn_container, text="New 3-Year Budget",
-                           command=lambda: self.create_new_budget(3),
-                           font=("Arial", 10), bg="#2C5F87", fg="white",
-                           activebackground="#1E4A6E", activeforeground="white",
-                           highlightbackground="#2C5F87",
-                           padx=12, pady=5, cursor="hand2")
+        btn_3yr = ttk.Button(btn_container, text="New 3-Year Budget",
+                            command=lambda: self.create_new_budget(3),
+                            style="Blue.TButton")
         btn_3yr.pack(side=tk.LEFT, padx=5)
 
-        btn_5yr = tk.Button(btn_container, text="New 5-Year Budget",
-                           command=lambda: self.create_new_budget(5),
-                           font=("Arial", 10), bg="#2C5F87", fg="white",
-                           activebackground="#1E4A6E", activeforeground="white",
-                           highlightbackground="#2C5F87",
-                           padx=12, pady=5, cursor="hand2")
+        btn_5yr = ttk.Button(btn_container, text="New 5-Year Budget",
+                            command=lambda: self.create_new_budget(5),
+                            style="Blue.TButton")
         btn_5yr.pack(side=tk.LEFT, padx=5)
 
-        btn_10yr = tk.Button(btn_container, text="New 10-Year Budget",
-                            command=lambda: self.create_new_budget(10),
-                            font=("Arial", 10), bg="#2C5F87", fg="white",
-                            activebackground="#1E4A6E", activeforeground="white",
-                            highlightbackground="#2C5F87",
-                            padx=12, pady=5, cursor="hand2")
+        btn_10yr = ttk.Button(btn_container, text="New 10-Year Budget",
+                             command=lambda: self.create_new_budget(10),
+                             style="Blue.TButton")
         btn_10yr.pack(side=tk.LEFT, padx=5)
 
         # Separator
