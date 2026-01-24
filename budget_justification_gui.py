@@ -114,25 +114,25 @@ class BudgetJustificationGUI:
 
         btn_3yr = tk.Button(btn_container, text="New 3-Year Budget",
                            command=lambda: self.create_new_budget(3),
-                           font=("Arial", 10), bg="#5C8A4D", fg="white",
-                           activebackground="#4A7340", activeforeground="white",
-                           highlightbackground="#5C8A4D",
+                           font=("Arial", 10), bg="#2C5F87", fg="white",
+                           activebackground="#1E4A6E", activeforeground="white",
+                           highlightbackground="#2C5F87",
                            padx=12, pady=5, cursor="hand2")
         btn_3yr.pack(side=tk.LEFT, padx=5)
 
         btn_5yr = tk.Button(btn_container, text="New 5-Year Budget",
                            command=lambda: self.create_new_budget(5),
-                           font=("Arial", 10), bg="#5C8A4D", fg="white",
-                           activebackground="#4A7340", activeforeground="white",
-                           highlightbackground="#5C8A4D",
+                           font=("Arial", 10), bg="#2C5F87", fg="white",
+                           activebackground="#1E4A6E", activeforeground="white",
+                           highlightbackground="#2C5F87",
                            padx=12, pady=5, cursor="hand2")
         btn_5yr.pack(side=tk.LEFT, padx=5)
 
         btn_10yr = tk.Button(btn_container, text="New 10-Year Budget",
                             command=lambda: self.create_new_budget(10),
-                            font=("Arial", 10), bg="#5C8A4D", fg="white",
-                            activebackground="#4A7340", activeforeground="white",
-                            highlightbackground="#5C8A4D",
+                            font=("Arial", 10), bg="#2C5F87", fg="white",
+                            activebackground="#1E4A6E", activeforeground="white",
+                            highlightbackground="#2C5F87",
                             padx=12, pady=5, cursor="hand2")
         btn_10yr.pack(side=tk.LEFT, padx=5)
 
