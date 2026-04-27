@@ -378,8 +378,9 @@ class BudgetExtractor:
                 else:
                     # Fallback to blended rate if not found in Summary
                     cum_sheet = self.wb['Cumulative']
-                    total_oth_salary = cum_sheet.cell(11, 36).value or 0
-                    total_oth_benefits = cum_sheet.cell(14, 36).value or 0
+                    total_col = 11 + (self.years * 5)
+                    total_oth_salary = cum_sheet.cell(11, total_col).value or 0
+                    total_oth_benefits = cum_sheet.cell(14, total_col).value or 0
 
                     if total_oth_salary > 0:
                         blended_ere = (total_oth_benefits / total_oth_salary) * 100
@@ -517,10 +518,11 @@ class BudgetExtractor:
             29: 'total_indirect_costs'
         }
 
+        total_col = 11 + (self.years * 5)  # 3yr→26, 5yr→36, 10yr→61
+
         for row_idx, category in budget_items.items():
             years = {}
-            # Total is in column 36
-            total = clean_numeric(sheet.cell(row_idx, 36).value)
+            total = clean_numeric(sheet.cell(row_idx, total_col).value)
 
             # Years at columns 11, 16, 21, 26, 31, ... (+5 pattern)
             for i in range(self.years):
