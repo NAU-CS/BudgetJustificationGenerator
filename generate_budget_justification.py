@@ -205,7 +205,14 @@ class BudgetExtractor:
         self.domestic_travel = []
         self.international_travel = []
         self.cumulative_data = {}
-        self.summary_sheet = self.wb['Summary_of_Personnel Costs ']  # Note the trailing space
+        # Sheet name varies: some files have a trailing space, others don't
+        summary_name = next(
+            (n for n in self.wb.sheetnames if n.strip() == 'Summary_of_Personnel Costs'),
+            None
+        )
+        if summary_name is None:
+            raise KeyError("Could not find 'Summary_of_Personnel Costs' sheet in workbook")
+        self.summary_sheet = self.wb[summary_name]
 
     def detect_years(self):
         """Auto-detect 3, 5, or 10 year template by scanning year columns"""
