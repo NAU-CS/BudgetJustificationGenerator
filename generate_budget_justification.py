@@ -213,6 +213,27 @@ class BudgetExtractor:
         if summary_name is None:
             raise KeyError("Could not find 'Summary_of_Personnel Costs' sheet in workbook")
         self.summary_sheet = self.wb[summary_name]
+        self._detect_budget_detail_cols()
+
+    def _detect_budget_detail_cols(self):
+        """Detect salary year-1 column from Budget Details row 10 header.
+
+        Templates differ:
+          3-year:  COST-yr. 1 at col 17, total at col 20 (17+3)
+          5-year:  COST-yr. 1 at col 20, total at col 25 (20+5)
+          10-year: COST-yr. 1 at col 30, total at col 40 (30+10)
+
+        Summary sheet total column follows 4 + years (col 7 / 9 / 14).
+        """
+        sheet = self.wb['Budget Details']
+        self.sal_yr1_col = 20   # fallback (5-year default)
+        for col in range(14, 55):
+            val = sheet.cell(10, col).value
+            if val is not None and str(val).strip() == 'COST-yr. 1':
+                self.sal_yr1_col = col
+                break
+        self.sal_total_col = self.sal_yr1_col + self.years
+        self.summary_total_col = 4 + self.years  # col 7 for 3yr, 9 for 5yr, 14 for 10yr
 
     def detect_years(self):
         """Auto-detect 3, 5, or 10 year template by scanning year columns"""
@@ -258,18 +279,18 @@ class BudgetExtractor:
                     pm_value = clean_numeric(sheet.cell(row, 7 + i).value)
                     person[f'pm_y{i+1}'] = pm_value
 
-                # Extract salary for each year (columns 20, 21, 22, 23, 24 for 5-year)
+                # Extract salary for each year
                 for i in range(self.years):
-                    salary_value = clean_numeric(sheet.cell(row, 20 + i).value)
+                    salary_value = clean_numeric(sheet.cell(row, self.sal_yr1_col + i).value)
                     person[f'salary_y{i+1}'] = salary_value
 
-                # Extract total salary (column 25)
-                person['total_salary'] = clean_numeric(sheet.cell(row, 25).value)
+                # Extract total salary
+                person['total_salary'] = clean_numeric(sheet.cell(row, self.sal_total_col).value)
 
                 # Extract total compensation from Summary sheet to calculate fringe
                 # Summary sheet starts at row 6 for first senior person (row 11 in Budget Details)
                 summary_row = row - 11 + 6
-                total_compensation = clean_numeric(self.summary_sheet.cell(summary_row, 9).value)  # Column I = total
+                total_compensation = clean_numeric(self.summary_sheet.cell(summary_row, self.summary_total_col).value)
 
                 # Calculate fringe as total_compensation - total_salary
                 if total_compensation and person['total_salary']:
@@ -352,11 +373,11 @@ class BudgetExtractor:
 
                 # Extract salary for each year and total
                 for i in range(self.years):
-                    salary_value = clean_numeric(sheet.cell(row, 20 + i).value)
+                    salary_value = clean_numeric(sheet.cell(row, self.sal_yr1_col + i).value)
                     position[f'salary_y{i+1}'] = salary_value
 
-                # Extract total salary (column 25)
-                position['total_salary'] = clean_numeric(sheet.cell(row, 25).value)
+                # Extract total salary
+                position['total_salary'] = clean_numeric(sheet.cell(row, self.sal_total_col).value)
 
                 # Find matching row in Summary sheet to get fringe
                 # Summary sheet has Other Personnel starting around row 31
@@ -576,7 +597,7 @@ class BudgetExtractor:
 
                 # Get yearly values
                 for i in range(self.years):
-                    year_val = clean_numeric(sheet.cell(row, 20 + i).value)
+                    year_val = clean_numeric(sheet.cell(row, self.sal_yr1_col + i).value)
                     if year_val > 0:
                         item['yearly'][f'year{i+1}'] = year_val
 
